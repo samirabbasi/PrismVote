@@ -1,110 +1,175 @@
-# FHEVM Hardhat Template
+# PrismVote
 
-A Hardhat-based template for developing Fully Homomorphic Encryption (FHE) enabled Solidity smart contracts using the
-FHEVM protocol by Zama.
+PrismVote is an encrypted voting dApp built on Zama FHEVM. It allows anyone to create time-bound polls,
+cast encrypted votes, and publish publicly verifiable results after the poll ends.
 
-## Quick Start
+## Overview
 
-For detailed instructions see:
-[FHEVM Hardhat Quick Start Tutorial](https://docs.zama.ai/protocol/solidity-guides/getting-started/quick-start-tutorial)
+PrismVote focuses on privacy-preserving, verifiable polling:
+- Votes are encrypted on-chain, so counts remain hidden while the poll is active.
+- Anyone can finalize a poll after it ends to make the ciphertexts publicly decryptable.
+- Decrypted results are verified on-chain before being recorded as the official outcome.
+
+## Problems Solved
+
+- Prevents early result leakage that can bias voter behavior.
+- Removes reliance on a centralized tallying authority.
+- Provides a public, tamper-evident audit trail for poll creation and final results.
+- Keeps voter choice confidential while still allowing verifiable counting.
+
+## Advantages
+
+- Strong confidentiality: vote choices are encrypted from submission to reveal.
+- Trust-minimized results: on-chain verification of decrypted counts.
+- Permissionless operations: any user can vote and any user can end a poll after it closes.
+- Clear lifecycle: create, vote, end, reveal, and publish results.
+- Deterministic rules: fixed option count, time windows, and one vote per address.
+
+## Key Features
+
+- Create polls with 2-4 options and explicit start and end times.
+- Encrypted voting using Zama FHEVM input proofs.
+- On-chain encrypted tallying during the voting window.
+- Public decryption enablement after the end time.
+- On-chain result publication with decryption proof verification.
+
+## How It Works
+
+1. A creator submits a poll title, 2-4 options, and a start and end time.
+2. Voters submit an encrypted choice plus an input proof.
+3. The contract adds encrypted counts without revealing totals.
+4. After the end time, anyone can call `endPoll` to make ciphertexts publicly decryptable.
+5. A decryption service produces clear counts and a proof.
+6. Anyone can call `publishResults` with the counts and proof to finalize results on-chain.
+
+## Technology Stack
+
+Smart contracts:
+- Solidity 0.8.24
+- Hardhat
+- Zama FHEVM libraries
+
+Frontend:
+- React + Vite
+- viem for read calls
+- ethers for write calls
+- RainbowKit for wallet connection
+- No Tailwind
+
+Tooling:
+- TypeScript
+- npm
+
+## Repository Layout
+
+```
+PrismVote/
+├── contracts/           # Smart contracts
+├── deploy/              # Deployment scripts
+├── deployments/         # Network deployment artifacts
+├── tasks/               # Hardhat tasks
+├── test/                # Contract tests
+├── home/                # Frontend app (React + Vite)
+└── hardhat.config.ts    # Hardhat configuration
+```
+
+## Setup and Usage
 
 ### Prerequisites
 
-- **Node.js**: Version 20 or higher
-- **npm or yarn/pnpm**: Package manager
+- Node.js 20+
+- npm
 
-### Installation
+### Install Dependencies
 
-1. **Install dependencies**
-
-   ```bash
-   npm install
-   ```
-
-2. **Set up environment variables**
-
-   ```bash
-   npx hardhat vars set MNEMONIC
-
-   # Set your Infura API key for network access
-   npx hardhat vars set INFURA_API_KEY
-
-   # Optional: Set Etherscan API key for contract verification
-   npx hardhat vars set ETHERSCAN_API_KEY
-   ```
-
-3. **Compile and test**
-
-   ```bash
-   npm run compile
-   npm run test
-   ```
-
-4. **Deploy to local network**
-
-   ```bash
-   # Start a local FHEVM-ready node
-   npx hardhat node
-   # Deploy to local network
-   npx hardhat deploy --network localhost
-   ```
-
-5. **Deploy to Sepolia Testnet**
-
-   ```bash
-   # Deploy to Sepolia
-   npx hardhat deploy --network sepolia
-   # Verify contract on Etherscan
-   npx hardhat verify --network sepolia <CONTRACT_ADDRESS>
-   ```
-
-6. **Test on Sepolia Testnet**
-
-   ```bash
-   # Once deployed, you can run a simple test on Sepolia.
-   npx hardhat test --network sepolia
-   ```
-
-## 📁 Project Structure
-
-```
-fhevm-hardhat-template/
-├── contracts/           # Smart contract source files
-│   └── FHECounter.sol   # Example FHE counter contract
-├── deploy/              # Deployment scripts
-├── tasks/               # Hardhat custom tasks
-├── test/                # Test files
-├── hardhat.config.ts    # Hardhat configuration
-└── package.json         # Dependencies and scripts
+```bash
+npm install
 ```
 
-## 📜 Available Scripts
+### Environment Configuration (Contracts Only)
 
-| Script             | Description              |
-| ------------------ | ------------------------ |
-| `npm run compile`  | Compile all contracts    |
-| `npm run test`     | Run all tests            |
-| `npm run coverage` | Generate coverage report |
-| `npm run lint`     | Run linting checks       |
-| `npm run clean`    | Clean build artifacts    |
+Create a `.env` file in the repository root:
 
-## 📚 Documentation
+```
+INFURA_API_KEY=your_key
+PRIVATE_KEY=your_private_key
+ETHERSCAN_API_KEY=optional_key
+```
 
-- [FHEVM Documentation](https://docs.zama.ai/fhevm)
-- [FHEVM Hardhat Setup Guide](https://docs.zama.ai/protocol/solidity-guides/getting-started/setup)
-- [FHEVM Testing Guide](https://docs.zama.ai/protocol/solidity-guides/development-guide/hardhat/write_test)
-- [FHEVM Hardhat Plugin](https://docs.zama.ai/protocol/solidity-guides/development-guide/hardhat)
+Notes:
+- Deployments use a private key. Do not use a mnemonic.
+- The frontend does not use environment variables.
 
-## 📄 License
+### Compile and Test
 
-This project is licensed under the BSD-3-Clause-Clear License. See the [LICENSE](LICENSE) file for details.
+```bash
+npm run compile
+npm run test
+```
 
-## 🆘 Support
+### Local Development Chain (Contracts)
 
-- **GitHub Issues**: [Report bugs or request features](https://github.com/zama-ai/fhevm/issues)
-- **Documentation**: [FHEVM Docs](https://docs.zama.ai)
-- **Community**: [Zama Discord](https://discord.gg/zama)
+```bash
+npx hardhat node
+npx hardhat deploy --network localhost
+```
 
----
+### Deploy to Sepolia
 
-**Built with ❤️ by the Zama team**
+```bash
+npx hardhat deploy --network sepolia
+npx hardhat verify --network sepolia <CONTRACT_ADDRESS>
+```
+
+## Frontend Integration (home/)
+
+The frontend is located in `home/` and must follow these rules:
+- Use the ABI generated by the contract build from `deployments/sepolia` and copy it into source code.
+- Do not import ABI JSON files directly in the frontend.
+- Read calls use viem; write calls use ethers.
+- Do not use localstorage.
+- Do not use environment variables.
+- Do not connect the frontend to a localhost network.
+- Do not use Tailwind.
+- Do not import files from the repository root.
+
+Suggested workflow:
+```bash
+cd home
+npm install
+npm run dev
+```
+
+## Contract Interface Summary
+
+- `createPoll(title, options, startTime, endTime)` creates a poll with 2-4 options.
+- `vote(pollId, encryptedChoice, inputProof)` casts an encrypted vote.
+- `endPoll(pollId)` makes encrypted counts publicly decryptable after the end time.
+- `publishResults(pollId, clearCounts, decryptionProof)` verifies and stores the final results.
+- `getPoll`, `getEncryptedCounts`, `getPublicCounts`, and `hasVoted` support data access.
+
+## Security and Privacy Notes
+
+- Voter identities (addresses) are public, but vote choices remain encrypted.
+- The contract enforces one vote per address per poll.
+- Counts remain confidential until `endPoll` is called and the decryption proof is verified.
+- Block timestamps are used for start and end times.
+
+## Limitations
+
+- Polls are limited to 2-4 options.
+- Only one vote per address is allowed.
+- Decryption requires a valid proof from the Zama relayer workflow.
+- Results are final once published on-chain.
+
+## Future Plans
+
+- Support for weighted voting while keeping ciphertexts private.
+- Optional allowlists without revealing voter choice.
+- Improved UX for handling input proofs and status states.
+- Additional analytics based on public results.
+- Multi-language UI and accessibility improvements.
+
+## License
+
+BSD-3-Clause-Clear. See `LICENSE`.
